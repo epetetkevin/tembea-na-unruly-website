@@ -1,0 +1,3 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase-server';
+export async function GET(){try{const db=await createClient();const {data:events,error}=await db.from('events').select('id,title').eq('published',true).gte('event_date',new Date().toISOString()).order('event_date');if(error)throw error;const ids=(events||[]).map(e=>e.id);let tickets:any[]=[];if(ids.length){const res=await db.from('ticket_categories').select('id,event_id,name,price,available_quantity').in('event_id',ids).eq('active',true);tickets=res.data||[]}return NextResponse.json({events:events||[],tickets})}catch{return NextResponse.json({events:[],tickets:[]},{status:200})}}
